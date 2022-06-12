@@ -1,11 +1,12 @@
 import {stdin, stdout, argv} from 'process';
 import {sep, resolve, isAbsolute} from 'path';
+import {EOL, cpus, homedir, userInfo, arch} from 'os';
 import {readdir, readFile, writeFile, rename, copyFile, rm} from 'fs/promises';
 import {createInterface} from 'readline';
 import {Transform} from 'stream';
 
 // Custom
-import {ALL_COMMANDS} from './../src/constants.js';
+import {ALL_COMMANDS, OS_PARAMETERS} from './../src/constants.js';
 import {getCurrentDirPath} from './../src/utils.js';
 
 async function main() {
@@ -153,6 +154,34 @@ async function main() {
 
         break;
       // /Basic operations with files
+      // Operating system info
+      case 'os':
+        if (!OS_PARAMETERS.includes(command[1])) {
+          transformStream.write('Invalid input\n');
+
+          break;
+        }
+
+        switch (command[1]) {
+          case '--EOL':
+            transformStream.write(`${EOL.replace('\n', '\\n').replace('\r', '\\r')}\n`);
+            break;
+          case '--cpus':
+            transformStream.write(`${JSON.stringify(cpus())}\n`);
+            break;
+          case '--homedir':
+            transformStream.write(`${homedir()}\n`);
+            break;
+          case '--username':
+            transformStream.write(`${userInfo().username}\n`);
+            break;
+          case '--architecture':
+            transformStream.write(`${arch()}`);
+            break;
+        }
+
+        break;
+      // /Operating system info
       default:
         transformStream.write(command[0]);
         break;
