@@ -5,10 +5,12 @@ import {readdir, readFile, writeFile, rename, copyFile, rm} from 'fs/promises';
 import {createInterface} from 'readline';
 import {Transform} from 'stream';
 import {createHash} from 'crypto';
+import {createBrotliCompress, createBrotliDecompress} from 'zlib';
 
 // Custom
 import {ALL_COMMANDS, OS_PARAMETERS} from './../src/constants.js';
 import {getCurrentDirPath} from './../src/utils.js';
+import {createReadStream, createWriteStream} from 'fs';
 
 async function main() {
   let currentDir = getCurrentDirPath(import.meta.url);
@@ -197,6 +199,40 @@ async function main() {
 
         break;
       // /Hash calculation
+      // Compress and decompress operations
+      case 'compress':
+        try {
+          const currentPath = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          const targetPath = !isAbsolute(command[2]) ? resolve(currentDir, command[2]) : command[2];
+          const source = createReadStream(currentPath);
+          const brotliCompress = createBrotliCompress();
+          const destination = createWriteStream(`${targetPath}/archive.gz`);
+
+          await source.pipe(brotliCompress).pipe(destination);
+
+          transformStream.write(`Archive was created.\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      case 'decompress':
+        try {
+          const currentPath = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          const targetPath = !isAbsolute(command[2]) ? resolve(currentDir, command[2]) : command[2];
+          const source = createReadStream(currentPath);
+          const brotliDecompress = createBrotliDecompress();
+          const destination = createWriteStream(`${targetPath}/decompressed.txt`);
+
+          await source.pipe(brotliDecompress).pipe(destination);
+
+          transformStream.write(`File was unarchived.\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      // /Compress and decompress operations
       default:
         transformStream.write(command[0]);
         break;
