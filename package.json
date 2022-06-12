@@ -1,0 +1,25 @@
+{
+  "name": "cli-file-manager",
+  "version": "1.0.0",
+  "description": "CLI file manager with very basic functionality.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/o2sevruk/nodejs-cli-file-manager.git"
+  },
+  "keywords": [
+    "nodejs",
+    "cli",
+    "file manager",
+    "o2sevruk"
+  ],
+  "author": "o2sevruk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/o2sevruk/nodejs-cli-file-manager/issues"
+  },
+  "homepage": "https://github.com/o2sevruk/nodejs-cli-file-manager#readme"
+}
