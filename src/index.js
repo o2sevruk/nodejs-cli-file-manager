@@ -4,6 +4,7 @@ import {EOL, cpus, homedir, userInfo, arch} from 'os';
 import {readdir, readFile, writeFile, rename, copyFile, rm} from 'fs/promises';
 import {createInterface} from 'readline';
 import {Transform} from 'stream';
+import {createHash} from 'crypto';
 
 // Custom
 import {ALL_COMMANDS, OS_PARAMETERS} from './../src/constants.js';
@@ -176,12 +177,26 @@ async function main() {
             transformStream.write(`${userInfo().username}\n`);
             break;
           case '--architecture':
-            transformStream.write(`${arch()}`);
+            transformStream.write(`${arch()}\n`);
             break;
         }
 
         break;
       // /Operating system info
+      // Hash calculation
+      case 'hash':
+        try {
+          const targetFile = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          const textFromFile = await readFile(targetFile, 'utf8');
+          const hash = createHash('sha256').update(textFromFile).digest('hex');
+
+          transformStream.write(`${hash}\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      // /Hash calculation
       default:
         transformStream.write(command[0]);
         break;
