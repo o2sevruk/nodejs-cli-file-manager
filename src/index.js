@@ -1,6 +1,6 @@
 import {stdin, stdout, argv} from 'process';
 import {sep, resolve, isAbsolute} from 'path';
-import {readdir} from 'fs/promises';
+import {readdir, readFile, writeFile, rename, copyFile, rm} from 'fs/promises';
 import {createInterface} from 'readline';
 import {Transform} from 'stream';
 
@@ -13,7 +13,6 @@ async function main() {
   const rl = createInterface({
     input: stdin,
     output: stdout,
-    terminal: false
   });
   const transformStream = new Transform({
     transform(chunk, encoding, callback) {
@@ -89,6 +88,71 @@ async function main() {
 
         break;
       // /System
+      // Basic operations with files
+      case 'cat':
+        try {
+          const filePath = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          const fileText = await readFile(filePath, 'utf8');
+          transformStream.write(`${fileText}\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please check that tha path to the file typed in correct way...\n`);
+        }
+
+        break;
+      case 'add':
+        try {
+          await writeFile(`${currentDir}/${command[1]}`, '', {flag: 'wx'});
+          transformStream.write(`File was created in the ${currentDir} directory.\n`);
+        } catch {
+          transformStream.write(`Seems like file that you try to create is exist...\n`);
+        }
+
+        break;
+      case 'rn':
+        try {
+          await rename(`${currentDir}/${command[1]}`, `${currentDir}/${command[2]}`);
+          transformStream.write(`File ${command[1]} was renamed with ${command[2]}.\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      case 'cp':
+        try {
+          const currentPath = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          const fileName = currentPath.split(sep).splice(-1);
+          const targetPath = !isAbsolute(command[2]) ? resolve(currentDir, command[2]) : command[2];
+          await copyFile(`${currentPath}`, `${targetPath}/${fileName}`);
+          transformStream.write(`File was copied.\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      case 'mv':
+        try {
+          const currentPath = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          const fileName = currentPath.split(sep).splice(-1);
+          const targetPath = !isAbsolute(command[2]) ? resolve(currentDir, command[2]) : command[2];
+          await copyFile(`${currentPath}`, `${targetPath}/${fileName}`);
+          await rm(currentPath);
+          transformStream.write(`File was moved.\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      case 'rm':
+        try {
+          const targetFile = !isAbsolute(command[1]) ? resolve(currentDir, command[1]) : command[1];
+          await rm(targetFile);
+          transformStream.write(`File was deleted.\n`);
+        } catch {
+          transformStream.write(`Something goes wrong, please try again...\n`);
+        }
+
+        break;
+      // /Basic operations with files
       default:
         transformStream.write(command[0]);
         break;
